@@ -677,6 +677,13 @@
         let currentEditingMessageId = null;
         let messageElements = {}; // Store message elements by ID for updates
 
+        // Persistent session ID to reliably identify own messages
+        let mySessionId = localStorage.getItem('chat-session-id');
+        if (!mySessionId) {
+            mySessionId = 'sid-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6);
+            localStorage.setItem('chat-session-id', mySessionId);
+        }
+
         function joinRoom() {
             const roomInput = document.getElementById('room-number-input');
             const roomNumber = roomInput.value.trim();
@@ -822,7 +829,7 @@
         }
 
         function appendMessage(msg) {
-            const isOwn = msg.ip === myIp;
+            const isOwn = msg.sid === mySessionId || (!msg.sid && msg.ip === myIp);
             const row = document.createElement('div');
             row.className = `message-row ${isOwn ? 'own' : 'other'}`;
             row.dataset.messageId = msg.id;
@@ -971,6 +978,7 @@
                 text: text,
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 ip: myIp,
+                sid: mySessionId,
                 type: 'chat',
                 avatar: myAvatar,
                 edited: false,
@@ -991,7 +999,8 @@
                         user: myNickname, 
                         text: text,
                         avatar: myAvatar,
-                        room: currentRoom
+                        room: currentRoom,
+                        sid: mySessionId
                     }) 
                 });
                 

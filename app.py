@@ -137,10 +137,9 @@ def send():
     msg_type = data.get('type', 'chat')
     target_ip = data.get('target', None)
     avatar = data.get('avatar', '')
+    sid = data.get('sid', '')
     
     if text.strip():
-        # Reload to ensure we have latest messages from other workers
-        load_data()
         
         global message_id_counter
         msg = {
@@ -150,6 +149,7 @@ def send():
             "text": text,
             "time": time.strftime("%H:%M"),
             "ip": request.remote_addr,
+            "sid": sid,
             "type": msg_type,
             "target": target_ip,
             "avatar": avatar,
@@ -172,8 +172,6 @@ def get_messages():
     room = request.args.get('room', 'public')
     after_id = request.args.get('after', -1, type=int)
     
-    # Reload latest from disk
-    load_data()
     
     # Filter by room and id
     new_messages = [m.copy() for m in messages if m.get('room') == str(room) and m['id'] > after_id]
