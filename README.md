@@ -20,7 +20,7 @@ This project is configured for easy deployment on [Render](https://render.com).
 3. Use the following settings:
    - **Runtime**: `Python 3`
    - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `gunicorn index:app`
+   - **Start Command**: `gunicorn app:app`
 4. Add an Environment Variable:
    - `PORT`: `5000` (optional, the code detects Render's port automatically)
 
@@ -32,7 +32,7 @@ This project is configured for easy deployment on [Render](https://render.com).
    ```
 2. Run the application:
    ```bash
-   python index.py
+   python app.py
    ```
 3. Open `http://localhost:5000` in your browser.
 
