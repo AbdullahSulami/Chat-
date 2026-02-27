@@ -139,6 +139,9 @@ def send():
     avatar = data.get('avatar', '')
     
     if text.strip():
+        # Reload to ensure we have latest messages from other workers
+        load_data()
+        
         global message_id_counter
         msg = {
             "id": message_id_counter,
@@ -154,9 +157,11 @@ def send():
         }
         messages.append(msg)
         message_id_counter += 1
-        # Keep only last 200 messages total or per room logic could be added
+        
+        # Keep only last 1000 messages
         if len(messages) > 1000:
             messages.pop(0)
+            
         save_all_data()
         notify_clients(room)
             
@@ -166,6 +171,9 @@ def send():
 def get_messages():
     room = request.args.get('room', 'public')
     after_id = request.args.get('after', -1, type=int)
+    
+    # Reload latest from disk
+    load_data()
     
     # Filter by room and id
     new_messages = [m.copy() for m in messages if m.get('room') == str(room) and m['id'] > after_id]
@@ -272,9 +280,13 @@ def stream():
         update_queues.append((q, str(r)))
         try:
             while True:
-                # Wait for a signal that something changed
-                q.get()
-                yield 'data: update\n\n'
+                try:
+                    # Wait for a signal that something changed with a timeout to keep connection alive
+                    q.get(timeout=20) # 20s timeout to stay under Gunicorn's 30s default
+                    yield 'data: update\n\n'
+                except queue.Empty:
+                    # Send a keep-alive comment to prevent worker timeout
+                    yield ': keep-alive\n\n'
         except GeneratorExit:
             for item in update_queues:
                 if item[0] == q:
@@ -290,28 +302,32 @@ def ping():
 def self_ping(port):
     """Background task to keep Render instance alive."""
     # Wait for server to start
-    time.sleep(10)
+    time.sleep(15)
+    
+    # Use external URL if on Render to be more effective
+    external_url = os.environ.get("RENDER_EXTERNAL_URL")
+    ping_url = f"{external_url}/ping" if external_url else f"http://127.0.0.1:{port}/ping"
+    
+    print(f"📡 Self-ping started targetting: {ping_url}")
+    
     while True:
         try:
-            # Pings itself locally on the correct port
-            requests.get(f"http://127.0.0.1:{port}/ping", timeout=5)
-            # This counts as activity to prevent Render from idling
-            print(f"🕒 Self-ping executed on port {port}")
+            requests.get(ping_url, timeout=10)
+            print(f"🕒 Self-ping executed: {time.strftime('%H:%M:%S')}")
         except Exception as e:
             print(f"⚠️ Self-ping failed: {e}")
-        # Ping every 10 minutes (Render free tier sleeps after 15m)
+        # Ping every 10 minutes to stay alive without excessive noise
         time.sleep(600)
 
+# Initialize data and start background tasks for Gunicorn/Production
+load_data()
+# Get port from environment or default to 5000
+port = int(os.environ.get("PORT", 5000))
+# Start self-ping thread
+threading.Thread(target=self_ping, args=(port,), daemon=True).start()
+
 if __name__ == '__main__':
-    load_data()
-    # Get port from environment or default to 5000
-    port = int(os.environ.get("PORT", 5000))
     is_render = "RENDER" in os.environ
-    
-    # Start self-ping thread
-    threading.Thread(target=self_ping, args=(port,), daemon=True).start()
-    
     print(f"🚀 Chat server starting on port {port}")
-    # Enable debug mode only when NOT on Render to allow auto-reloading during development
-    # On Render, debug=False is safer and more performant
+    # Enable debug mode only when NOT on Render
     app.run(host='0.0.0.0', port=port, debug=not is_render, threaded=True)

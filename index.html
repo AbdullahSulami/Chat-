@@ -43,6 +43,7 @@
             background: var(--header-bg); padding: 10px 16px; padding-top: max(10px, env(safe-area-inset-top));
             display: flex; align-items: center; gap: 12px; z-index: 10;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2); flex-shrink: 0;
+            user-select: none;
         }
 
         .avatar { 
@@ -65,46 +66,120 @@
             object-fit: cover;
         }
         .header-info { flex: 1; }
-        .header-info h2 { font-size: 1rem; }
-        .header-info p { font-size: 0.75rem; color: var(--accent-green); }
+        .header-info h2 { font-size: 1.1rem; font-weight: 700; color: var(--accent-green); }
+        .header-info p { font-size: 0.75rem; color: var(--text-muted); }
 
-        .nickname-box {
+        /* Modern Menu */
+        .menu-container {
+            position: relative;
+        }
+        .menu-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .menu-btn:hover {
+            background: var(--input-bg);
+        }
+        .menu-dropdown {
+            position: absolute;
+            inset-inline-end: 0;
+            top: 100%;
+            background: var(--header-bg);
+            border-radius: 12px;
+            padding: 16px;
+            width: 220px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+            z-index: 1000;
+            margin-top: 8px;
+            border: 1px solid var(--input-bg);
+            animation: slideDown 0.2s ease-out;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .menu-dropdown.show {
+            display: flex;
+        }
+        .menu-item {
             display: flex;
             flex-direction: column;
-            align-items: flex-end;
             gap: 4px;
+        }
+        .menu-item label {
+            font-size: 0.75rem;
+            color: var(--accent-green);
+            font-weight: 600;
         }
         #nickname-input { 
             background: var(--input-bg); 
             border: 1px solid var(--text-muted); 
             border-radius: 8px;
             color: var(--text-main); 
-            font-size: 0.85rem; 
-            padding: 6px 10px;
-            width: 120px; 
-            text-align: center; 
+            font-size: 0.9rem; 
+            padding: 8px 10px;
+            width: 100%; 
             outline: none;
             transition: all 0.3s ease;
         }
         #nickname-input:focus {
             border-color: var(--accent-green);
-            background: var(--header-bg);
         }
         #avatar-input {
             display: none;
         }
         .avatar-btn {
-            background: var(--accent-green);
-            color: white;
-            border: none;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 0.7rem;
+            background: var(--input-bg);
+            color: var(--text-main);
+            border: 1px solid var(--text-muted);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
             cursor: pointer;
             transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
         .avatar-btn:hover {
-            background: #00d9a8;
+            background: var(--header-bg);
+            border-color: var(--accent-green);
+        }
+        .lang-switch {
+            display: flex;
+            background: var(--input-bg);
+            border-radius: 8px;
+            padding: 4px;
+            gap:4px;
+        }
+        .lang-btn {
+            flex: 1;
+            padding: 6px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            cursor: pointer;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        .lang-btn.active {
+            background: var(--accent-green);
+            color: white;
         }
 
        #chat-area {
@@ -146,8 +221,9 @@
         .message-row.own .message-avatar {
             order: 2;
         }
+        
         .bubble {
-            max-width: 65%;
+            max-width: 75%;
             padding: 8px 12px;
             border-radius: 12px;
             font-size: 0.95rem;
@@ -156,14 +232,19 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.2);
             animation: popIn 0.2s ease-out;
         }
+        @media (max-width: 480px) {
+            .bubble { max-width: 85%; }
+            .header-info h2 { font-size: 1rem; }
+            .header-info p { font-size: 0.7rem; }
+        }
         @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .bubble.own { 
             background: var(--outgoing-bg); 
-            border-top-right-radius: 2px; 
+            border-start-end-radius: 2px; 
         }
         .bubble.other { 
             background: var(--incoming-bg); 
-            border-top-left-radius: 2px; 
+            border-start-start-radius: 2px; 
         }
         .sender-name { 
             font-size: 0.8rem; 
@@ -216,10 +297,10 @@
             z-index: 5;
         }
         .message-row.own .message-actions {
-            right: 45px;
+            inset-inline-end: 45px;
         }
         .message-row.other .message-actions {
-            left: 45px;
+            inset-inline-start: 45px;
         }
         .message-row:hover .message-actions {
             display: flex;
@@ -526,13 +607,30 @@
         <header>
             <div class="avatar" id="my-avatar">C</div>
             <div class="header-info">
-                <h2 id="room-display">Room: #...</h2>
-                <p id="status-text">Connecting...</p>
+                <h2 id="room-display" data-i18n="room_title">Room: #...</h2>
+                <p id="status-text" data-i18n="connecting">Connecting...</p>
             </div>
-            <div class="nickname-box">
-                <input type="text" id="nickname-input" placeholder="Nickname">
-                <input type="file" id="avatar-input" accept="image/*">
-                <button class="avatar-btn" onclick="document.getElementById('avatar-input').click()">📷 Avatar</button>
+            <div class="menu-container">
+                <button class="menu-btn" onclick="toggleMenu(event)">⋮</button>
+                <div class="menu-dropdown" id="menu-dropdown">
+                    <div class="menu-item">
+                        <label data-i18n="nickname_label">Nickname</label>
+                        <input type="text" id="nickname-input" placeholder="Nickname">
+                    </div>
+                    <div class="menu-item">
+                        <input type="file" id="avatar-input" accept="image/*">
+                        <button class="avatar-btn" onclick="document.getElementById('avatar-input').click()">
+                            <span>📷</span> <span data-i18n="avatar_btn">Avatar</span>
+                        </button>
+                    </div>
+                    <div class="menu-item">
+                        <label data-i18n="language_label">Language</label>
+                        <div class="lang-switch">
+                            <button class="lang-btn" id="lang-en" onclick="setLanguage('en')">English</button>
+                            <button class="lang-btn" id="lang-ar" onclick="setLanguage('ar')">العربية</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </header>
         <div id="chat-area"></div>
@@ -677,7 +775,8 @@
             try {
                 const response = await fetch(`/messages?after=${lastMessageId}&room=${currentRoom}`);
                 const messages = await response.json();
-                statusText.innerText = 'Online';
+                statusText.innerText = translations[currentLang].online || 'Online';
+                statusText.setAttribute('data-i18n', 'online');
                 
                 messages.forEach(msg => {
                     // Alert handling
@@ -717,7 +816,8 @@
                     lastMessageId = Math.max(lastMessageId, msg.id);
                 });
             } catch (err) { 
-                statusText.innerText = 'Connecting...'; 
+                statusText.innerText = translations[currentLang].connecting || 'Connecting...'; 
+                statusText.setAttribute('data-i18n', 'connecting');
             }
         }
 
@@ -727,14 +827,15 @@
             row.className = `message-row ${isOwn ? 'own' : 'other'}`;
             row.dataset.messageId = msg.id;
             
-            const avatarHTML = `<div class="message-avatar">${getAvatarHTML(msg.user, msg.avatar)}</div>`;
+            const avatarHTML = getAvatarHTML(msg.user, msg.avatar);
             
             const readStatus = getReadStatus(msg, isOwn);
-            const editedLabel = msg.edited ? '<span class="edited-label">edited</span>' : '';
+            const editedLabelText = translations[currentLang].edited || 'edited';
+            const editedLabel = msg.edited ? `<span class="edited-label">${editedLabelText}</span>` : '';
             
             const actionsHTML = isOwn ? `
                 <div class="message-actions">
-                    <button class="action-btn" onclick="openEditModal(${msg.id}, '${msg.text.replace(/'/g, "\\'")}')">✏️</button>
+                    <button class="action-btn" onclick="handleEditClick(${msg.id})">✏️</button>
                     <button class="action-btn" onclick="deleteMessage(${msg.id})">🗑️</button>
                     <button class="action-btn" onclick="toggleEmojiPicker(${msg.id})">😊</button>
                 </div>
@@ -746,29 +847,47 @@
             
             const reactionsHTML = getReactionsHTML(msg);
             
-            row.innerHTML = `
-                ${!isOwn ? avatarHTML : ''}
-                <div class="bubble ${isOwn ? 'own' : 'other'}">
-                    ${actionsHTML}
-                    <div class="emoji-picker" id="emoji-picker-${msg.id}">
-                        <button class="emoji-btn" onclick="reactToMessage(${msg.id}, '❤️')">❤️</button>
-                        <button class="emoji-btn" onclick="reactToMessage(${msg.id}, '😂')">😂</button>
-                        <button class="emoji-btn" onclick="reactToMessage(${msg.id}, '👍')">👍</button>
-                        <button class="emoji-btn" onclick="reactToMessage(${msg.id}, '🔥')">🔥</button>
-                        <button class="emoji-btn" onclick="reactToMessage(${msg.id}, '😮')">😮</button>
-                        <button class="emoji-btn" onclick="reactToMessage(${msg.id}, '😢')">😢</button>
-                    </div>
-                    <span class="sender-name">${msg.user}</span>
-                    <div class="message-text">${msg.text}</div>
-                    ${reactionsHTML}
-                    <div class="message-footer">
-                        ${editedLabel}
-                        <span class="time-stamp">${msg.time}</span>
-                        ${readStatus}
-                    </div>
+            const bubble = document.createElement('div');
+            bubble.className = `bubble ${isOwn ? 'own' : 'other'}`;
+            bubble.innerHTML = `
+                ${actionsHTML}
+                <div class="emoji-picker" id="emoji-picker-${msg.id}">
+                    <button class="emoji-btn" onclick="reactToMessage(${msg.id}, '❤️')">❤️</button>
+                    <button class="emoji-btn" onclick="reactToMessage(${msg.id}, '😂')">😂</button>
+                    <button class="emoji-btn" onclick="reactToMessage(${msg.id}, '👍')">👍</button>
+                    <button class="emoji-btn" onclick="reactToMessage(${msg.id}, '🔥')">🔥</button>
+                    <button class="emoji-btn" onclick="reactToMessage(${msg.id}, '😮')">😮</button>
+                    <button class="emoji-btn" onclick="reactToMessage(${msg.id}, '😢')">😢</button>
                 </div>
-                ${isOwn ? avatarHTML : ''}
+                <span class="sender-name"></span>
+                <div class="message-text"></div>
+                ${reactionsHTML}
+                <div class="message-footer">
+                    ${editedLabel}
+                    <span class="time-stamp">${msg.time}</span>
+                    ${readStatus}
+                </div>
             `;
+            
+            // Set text content safely to prevent XSS
+            bubble.querySelector('.sender-name').textContent = msg.user;
+            bubble.querySelector('.message-text').textContent = msg.text;
+            
+            if (!isOwn) {
+                const avatarDiv = document.createElement('div');
+                avatarDiv.className = 'message-avatar';
+                avatarDiv.innerHTML = getAvatarHTML(msg.user, msg.avatar);
+                row.appendChild(avatarDiv);
+            }
+            
+            row.appendChild(bubble);
+            
+            if (isOwn) {
+                const avatarDiv = document.createElement('div');
+                avatarDiv.className = 'message-avatar';
+                avatarDiv.innerHTML = getAvatarHTML(msg.user, msg.avatar);
+                row.appendChild(avatarDiv);
+            }
             
             chatArea.appendChild(row);
             messageElements[msg.id] = row;
@@ -906,7 +1025,7 @@
         }
 
         async function deleteMessage(msgId) {
-            if (!confirm('Delete this message?')) return;
+            if (!confirm(translations[currentLang].delete_confirm || 'Delete this message?')) return;
             
             // Immediate UI feedback
             const row = messageElements[msgId];
@@ -917,6 +1036,13 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id: msgId })
             });
+        }
+
+        function handleEditClick(msgId) {
+            const row = messageElements[msgId];
+            if (!row) return;
+            const text = row.querySelector('.message-text').textContent;
+            openEditModal(msgId, text);
         }
 
         function openEditModal(msgId, currentText) {
@@ -1009,43 +1135,121 @@
             };
         }
 
-        // Close emoji pickers when clicking outside
+        // --- I18N SYSTEM ---
+        const translations = {
+            en: {
+                room_title: "Room: #...",
+                connecting: "Connecting...",
+                online: "Online",
+                nickname_label: "Nickname",
+                nickname_placeholder: "Nickname",
+                avatar_btn: "Avatar",
+                language_label: "Language",
+                join_room: "🏠 Join a Room",
+                join_desc: "Enter the room number to start chatting",
+                room_placeholder: "Room Number (e.g. 1234)",
+                join_btn: "Join Chat",
+                type_msg: "Type a message...",
+                system_alert: "SYSTEM CRITICAL",
+                dismiss: "DISMISS",
+                edit_title: "✏️ Edit Message",
+                cancel: "Cancel",
+                save: "Save",
+                delete_confirm: "Delete this message?",
+                edited: "edited"
+            },
+            ar: {
+                room_title: "الغرفة: #...",
+                connecting: "جاري الاتصال...",
+                online: "متصل",
+                nickname_label: "الاسم المستعار",
+                nickname_placeholder: "الاسم",
+                avatar_btn: "الصورة الشخصية",
+                language_label: "اللغة",
+                join_room: "🏠 انضمام لغرفة",
+                join_desc: "أدخل رقم الغرفة لبدء المحادثة",
+                room_placeholder: "رقم الغرفة (مثال: 1234)",
+                join_btn: "انضمام للمحادثة",
+                type_msg: "اكتب رسالة...",
+                system_alert: "تنبيه النظام",
+                dismiss: "إغلاق",
+                edit_title: "✏️ تعديل الرسالة",
+                cancel: "إلغاء",
+                save: "حفظ",
+                delete_confirm: "حذف هذه الرسالة؟",
+                edited: "تم التعديل"
+            }
+        };
+
+        let currentLang = localStorage.getItem('chat-lang') || 'en';
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('chat-lang', lang);
+            document.documentElement.lang = lang;
+            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+            
+            // Update active state in menu
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`lang-${lang}`).classList.add('active');
+            
+            // Apply translations
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang][key]) {
+                    // Special case for room display to preserve current room number
+                    if (key === 'room_title' && currentRoom) {
+                        el.innerText = lang === 'ar' ? `الغرفة: #${currentRoom}` : `Room: #${currentRoom}`;
+                    } else {
+                        el.innerText = translations[lang][key];
+                    }
+                }
+            });
+            
+            // Update placeholders
+            messageInput.placeholder = translations[lang].type_msg;
+            nicknameInput.placeholder = translations[lang].nickname_placeholder;
+            document.getElementById('room-number-input').placeholder = translations[lang].room_placeholder;
+            
+            // Update static elements
+            document.querySelector('#room-overlay h2').innerText = translations[lang].join_room;
+            document.querySelector('#room-overlay p').innerText = translations[lang].join_desc;
+            document.querySelector('#room-overlay button').innerText = translations[lang].join_btn;
+            document.querySelector('#alert-overlay h1').innerText = translations[lang].system_alert;
+            document.querySelector('#alert-overlay button').innerText = translations[lang].dismiss;
+            document.querySelector('.edit-box h3').innerText = translations[lang].edit_title;
+            document.querySelector('.cancel-btn').innerText = translations[lang].cancel;
+            document.querySelector('.save-btn').innerText = translations[lang].save;
+        }
+
+        function toggleMenu(e) {
+            if (e) e.stopPropagation();
+            document.getElementById('menu-dropdown').classList.toggle('show');
+        }
+
+        // Close menu when clicking outside
         document.addEventListener('click', (e) => {
+            const menu = document.getElementById('menu-dropdown');
+            if (menu && !menu.contains(e.target) && !e.target.closest('.menu-btn')) {
+                menu.classList.remove('show');
+            }
             if (!e.target.closest('.action-btn') && !e.target.closest('.emoji-picker')) {
-                document.querySelectorAll('.emoji-picker').forEach(p => {
-                    p.classList.remove('show');
-                });
+                document.querySelectorAll('.emoji-picker').forEach(p => p.classList.remove('show'));
             }
         });
 
-        // Close edit modal when clicking outside
-        editModal.addEventListener('click', (e) => {
-            if (e.target === editModal) {
-                closeEditModal();
-            }
-        });
+        // Initialize language
+        setLanguage(currentLang);
 
         sendBtn.onclick = sendMessage;
         messageInput.onkeypress = (e) => { if (e.key === 'Enter') sendMessage(); };
         
         // Intervals
-        setInterval(fetchMessages, 5000); // Polling as slow fallback
+        setInterval(fetchMessages, 5000); 
         setInterval(updateOurStatus, 4000);
         
-        // Initial load removed - triggered by joinRoom
-        // fetchMessages();
-        // updateOurStatus();
-        // initRealtime();
-
-        // Integrated user functions (Fixed to avoid re-declaration errors)
-        function loadMessages() {
-            fetchMessages(); // Redirect to the more complete function
-        }
-
-        function addMessageToChat(msg) {
-            const box = document.getElementById("chat-area"); // Fixed ID
-            appendMessage(msg); // Use the styled append function
-        }
+        function loadMessages() { fetchMessages(); }
+        function addMessageToChat(msg) { appendMessage(msg); }
     </script>
 
 </body>
